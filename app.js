@@ -29,21 +29,25 @@ const app = new App({
 
 const octokit = new Octokit({ auth: token });
 
+const { data } = await app.octokit.request('/app')
+
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 
 // This sets up a webhook event listener. 
-
-// Check if the "syncPullRequests" feature is enabled in the config file's settings
-//When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `pull_request` and an `action` payload value of `opened`, it calls the `handlePullRequestOpened` event handler that is defined in /handlers/pull-requests.js.
-if (config.settings && config.settings.features.syncPullRequests) {
-  app.webhooks.on("pull_request.opened", (webhook) => handlePullRequestOpened(webhook, config, octokit));
-}
 
 // Check if the "syncPushes" feature is enabled in the config file's settings
 //When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `push`, it calls the `handlePush` event handler that is defined in /handlers/pushes.js.
 if (config.settings && config.settings.features.syncPushes) {
   app.webhooks.on("push", (webhook) => handlePush(webhook, config, token));
 }
+
+// Check if the "syncPullRequests" feature is enabled in the config file's settings
+//When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `pull_request` and an `action` payload value of `opened`, it calls the `handlePullRequestOpened` event handler that is defined in /handlers/pull-requests.js.
+if (config.settings && config.settings.features.syncPullRequests) {
+  app.webhooks.on("pull_request.opened", (webhook) => handlePullRequestOpened(webhook, config, octokit));
+//  app.webhooks.on("pull_request.synchronize", (webhook) => handlePullRequestOpened(webhook, config, octokit));
+  app.webhooks.on("pull_request.closed", (webhook) => handlePullRequestClosed(webhook, config, octokit));
+};
 
 // This logs any errors that occur.
 app.webhooks.onError((error) => {
@@ -73,6 +77,7 @@ const middleware = createNodeMiddleware(app.webhooks, { path });
 
 // This creates a Node.js server that listens for incoming HTTP requests (including webhook payloads from GitHub) on the specified port. When the server receives a request, it executes the `middleware` function that you defined earlier. Once the server is running, it logs messages to the console to indicate that it is listening.
 http.createServer(middleware).listen(port, () => {
+  console.log(`Authenticated as '${data.name}'`);
   console.log(`Server is listening for events at: ${localWebhookUrl}`);
-  console.log('Press Ctrl + C to quit.')
+  console.log('Press Ctrl + C to quit.');
 });

@@ -1,5 +1,5 @@
 {
-    "name": "org-sync-app",
+    "name": "hts-ccoe-org-sync-repo-operations",
     "version": "0.1.0",
     "description": "Syncs GitHub orgs and their repos",
     "author": "Assaf Stone, @devopsjester",
@@ -10,7 +10,7 @@
             "syncPullRequests": true
         },
         "shadows": [
-            "org-sync-target"
+            "hts-ccoe-test"
         ],
         "whitelist": [
             ".*"

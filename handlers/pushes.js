@@ -62,13 +62,14 @@ async function initializeGitRepo(directory, owner, repo, token) {
         console.log(`Initialized git repository in ${directory}`);
 
         const remoteUrl = `https://${token}@github.com/${owner}/${repo}.git`;
+        const remoteUrlMasked = `https://ghp_xxxx@github.com/${owner}/${repo}.git`;
         const isRemoteExist = await git.getRemotes(false).then(remotes => remotes.some(remote => remote.name === 'origin'));
         if (isRemoteExist) {
             await git.removeRemote('origin');
         }
         await git.addRemote('origin', remoteUrl);
 
-        console.log(`Added remote origin ${remoteUrl}`);
+        console.log(`Added remote origin ${remoteUrlMasked}`);
 
         return git;
     } catch (error) {
@@ -114,12 +115,13 @@ async function pushToShadowRepos(git, shadowRepo, token) {
     try {
         // add a remote to the shadow repo called 'target'
         const shadowUrl = `https://${token}@github.com/${shadowRepo}.git`;
+        const shadowUrlMasked = `https://ghp_xxxx@github.com/${shadowRepo}.git`;
         const isShadowRemoteExist = await git.getRemotes(false).then(remotes => remotes.some(remote => remote.name === 'target'));
         if (isShadowRemoteExist) {
             await git.removeRemote('target');
         }
         await git.addRemote('target', shadowUrl);
-        console.log(`Added remote target ${shadowUrl}`);
+        console.log(`Added remote target ${shadowUrlMasked}`);
 
         // push all branches to the shadow repo
         await git.push('target', '--all');
